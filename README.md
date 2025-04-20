@@ -104,41 +104,41 @@ python run.py --no-gui
   - 可以在 `test_robot_dog.py` 或 `test_robot_dog_unit.py` 這類腳本裡，短暫開啟 GUI、存圖或錄影
   - 也可以在環境裡加一個「存圖」的 function，訓練過程中定時存下機器狗狀態
 
-## Training Configuration
+## 訓練參數說明
 
-The training script uses the following key parameters:
-- Number of parallel environments: 4
-- Total training timesteps: 1,000,000
-- Learning rate: 3e-4
-- Batch size: 64
-- Number of epochs: 10
-- Gamma: 0.99
-- GAE Lambda: 0.95
+訓練腳本主要參數如下：
+- 並行環境數量：4
+- 總訓練步數：1,000,000
+- 學習率：3e-4
+- 批次大小：64
+- Epoch 數：10
+- 折扣因子 Gamma：0.99
+- GAE Lambda：0.95
 
-## Environment Details
+## 環境觀測與獎勵
 
-The environment provides the following observations:
-- Joint positions
-- Joint velocities
-- IMU orientation
-- IMU angular velocity
-- IMU linear acceleration
-- Foot contact states
+觀測內容：
+- 關節位置
+- 關節速度
+- IMU 姿態
+- IMU 角速度
+- IMU 線加速度
+- 腳端接觸狀態
 
-Reward function components:
-- Distance to target
-- Stability (based on IMU orientation)
-- Energy efficiency (based on joint torques)
-- Foot contact patterns
+獎勵組成：
+- 與目標距離
+- 穩定性（IMU 姿態）
+- 能源效率（關節扭力）
+- 腳端接觸模式
 
-## License
+## 授權
 
 MIT License
 
-## Acknowledgments
+## 致謝
 
-This project is inspired by recent advances in:
-- Procedural content generation
-- Physics-based simulation
-- Deep reinforcement learning
-- Robot locomotion 
+本專案靈感來自於：
+- 程序化內容生成
+- 物理模擬技術
+- 深度強化學習
+- 機器人運動控制
