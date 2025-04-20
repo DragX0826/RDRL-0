@@ -31,7 +31,7 @@ class RobotDogEnv(gym.Env):
             return super().render(mode=mode)
 
     def __init__(self, urdf_path: str, render: bool = False):
-        print("[DEBUG] Entering RobotDogEnv.__init__")
+        print(f"[DEBUG] Entering RobotDogEnv.__init__ (urdf_path={urdf_path}, render={render})")
         super().__init__()
         print("[DEBUG] After super().__init__ in RobotDogEnv")
         
@@ -63,8 +63,9 @@ class RobotDogEnv(gym.Env):
         print("[DEBUG] TerrainGenerator created")
         from robot_model import RobotModel
         print("[DEBUG] Import RobotModel")
+        print(f"[DEBUG] About to create RobotModel in __init__ (urdf_path={urdf_path}, physics_client_id={self.physics_client_id})")
         self.robot = RobotModel(urdf_path, self.physics_client_id)
-        print("[DEBUG] RobotModel created")
+        print(f"[DEBUG] RobotModel created in __init__, robot_id={getattr(self.robot, 'robot_id', None)}")
         
         # Define action and observation spaces
         self.action_space = gym.spaces.Box(
@@ -108,10 +109,11 @@ class RobotDogEnv(gym.Env):
         self.difficulty = 0.0  # Initial difficulty level
         
     def _generate_terrain(self):
+        print("[DEBUG] Entering _generate_terrain")
         """Generate a new terrain and set up the environment."""
         # Generate terrain data with current difficulty
         terrain_data = self.terrain_generator.generate_terrain(difficulty=self.difficulty)
-        
+        print("[DEBUG] Terrain data generated")
         # Create ground plane
         ground_shape = p.createCollisionShape(
             shapeType=p.GEOM_HEIGHTFIELD,
@@ -120,7 +122,7 @@ class RobotDogEnv(gym.Env):
             numHeightfieldColumns=terrain_data['height_map'].shape[1],
             physicsClientId=self.physics_client_id
         )
-        
+        print(f"[DEBUG] Collision shape created: {ground_shape}")
         # Create ground body without separate visual shape
         self.ground_id = p.createMultiBody(
             baseMass=0,
@@ -129,7 +131,7 @@ class RobotDogEnv(gym.Env):
             basePosition=[0, 0, 0],
             physicsClientId=self.physics_client_id
         )
-        
+        print(f"[DEBUG] Ground multi body created: {self.ground_id}")
         # Set a default visual color for the ground
         p.changeVisualShape(
             self.ground_id,
@@ -137,7 +139,7 @@ class RobotDogEnv(gym.Env):
             rgbaColor=[0.7, 0.7, 0.7, 1],
             physicsClientId=self.physics_client_id
         )
-        
+        print("[DEBUG] Ground visual shape changed")
         # Set biome-specific properties
         biome_type = self.terrain_generator.get_biome_type(
             terrain_data['temperature'].mean(),
@@ -150,7 +152,7 @@ class RobotDogEnv(gym.Env):
             lateralFriction=biome_props['friction'],
             restitution=biome_props['bounce']
         )
-        
+        print(f"[DEBUG] Ground dynamics set: {biome_props}")
         # Set random target position
         size = terrain_data['height_map'].shape[0]
         self.target_position = np.array([
@@ -158,7 +160,7 @@ class RobotDogEnv(gym.Env):
             np.random.uniform(-size/2, size/2),
             terrain_data['height_map'][size//2, size//2]
         ])
-
+        print(f"[DEBUG] Target position set: {self.target_position}")
         # Set camera to view the center of the terrain
         try:
             p.resetDebugVisualizerCamera(
@@ -170,14 +172,16 @@ class RobotDogEnv(gym.Env):
             )
         except Exception as e:
             print(f"[DEBUG] Camera set failed: {e}")
-
         print(f"[DEBUG] Terrain and camera set. Size: {size}")
         
     def increase_difficulty(self):
+        print("[DEBUG] Entering increase_difficulty")
         """Increase the environment difficulty."""
         self.difficulty = min(1.0, self.difficulty + 0.1)
+        print(f"[DEBUG] Difficulty increased to {self.difficulty}")
         
     def reset(self, seed=None, options=None) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        print("[DEBUG] Entering RobotDogEnv.reset")
         """Reset the environment to initial state. Automatically increases terrain difficulty."""
         super().reset(seed=seed)
 
@@ -191,16 +195,18 @@ class RobotDogEnv(gym.Env):
         self._generate_terrain()
 
         # Reset robot
+        print(f"[DEBUG] About to create RobotModel in reset (urdf_path={self.robot.urdf_path}, physics_client_id={self.physics_client_id})")
         self.robot = RobotModel(self.robot.urdf_path, self.physics_client_id)
-        print(f"[DEBUG] Robot created with URDF: {self.robot.urdf_path}")
+        print(f"[DEBUG] RobotModel created in reset, robot_id={getattr(self.robot, 'robot_id', None)}")
 
         # Reset environment state
         self.steps = 0
         self.current_position = np.array([0, 0, 1])
         
         # Get initial observation
+        print("[DEBUG] Calling _get_observation after robot creation in reset")
         obs, info = self._get_observation()
-        
+        print(f"[DEBUG] Reset returning obs keys: {list(obs.keys())}, info keys: {list(info.keys())}")
         return obs, info
     
     def _get_observation(self) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
