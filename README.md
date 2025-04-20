@@ -1,17 +1,17 @@
-# Robot Dog DRL Training
+# 機器狗深度強化學習訓練系統
 
-This project implements a Deep Reinforcement Learning (DRL) system for training a quadruped robot dog in procedurally generated terrains. The system combines terrain generation, physics simulation, and reinforcement learning to train a robot dog to navigate complex 3D environments.
+本專案實現了一套可於程序生成地形上訓練四足機器狗的深度強化學習（DRL）系統，結合地形生成、物理模擬（PyBullet）與強化學習演算法（Stable Baselines3），讓機器狗能在複雜 3D 環境中自主學習移動。
 
-## Features
+## 主要特色
 
-- Procedural terrain generation using fractal noise
-- Biome-based environment variation
-- Physics-based robot simulation using PyBullet
-- Reinforcement learning using Stable Baselines3
-- Support for parallel environment training
-- TensorBoard integration for training visualization
+- 程序化地形（分形雜訊）自動生成
+- 多種生態地貌隨機切換
+- PyBullet 物理引擎模擬機器狗運動
+- 採用 Stable Baselines3 強化學習框架
+- 支援多環境並行訓練
+- TensorBoard 訓練過程即時監控
 
-## Requirements
+## 相依套件
 
 - Python 3.8+
 - numpy<2.0.0
@@ -24,25 +24,25 @@ This project implements a Deep Reinforcement Learning (DRL) system for training 
 - tensorboard>=2.14.0
 - stable-baselines3
 
-Install dependencies:
+安裝方式：
 ```bash
 pip install -r requirements.txt
 ```
 
-## Project Structure
+## 專案結構
 
-- `terrain_generator.py`: Implements procedural terrain generation using fractal noise
-- `robot_model.py`: Defines the robot model and its physics simulation
-- `minecraft_env.py`: Implements the Gymnasium environment interface for the robot dog
-- `configs/default.yaml`: Default training and environment configuration
-- `run.py`: Orchestrates setup, launches TensorBoard, and starts training
-- `start_training.py`: Convenience script to set URDF path and launch training
-- `train.py`: Main training script using PPO algorithm
-- `robot_dog.urdf`: Robot model description file
+- `terrain_generator.py`：地形生成邏輯
+- `robot_model.py`：機器狗模型與物理模擬
+- `minecraft_env.py`：Gymnasium 環境實作
+- `configs/default.yaml`：訓練與環境預設參數
+- `run.py`：自動化訓練啟動、TensorBoard 啟動
+- `start_training.py`：自動設置 URDF 路徑並啟動訓練
+- `train.py`：主訓練腳本（PPO）
+- `robot_dog.urdf`：機器狗模型 URDF 檔
 
-## Usage
+## 使用方式
 
-1. Create and activate a virtual environment:
+1. 建立並啟動虛擬環境：
 ```bash
 python -m venv .venv
 # Linux / macOS / WSL
@@ -51,29 +51,58 @@ source .venv/bin/activate
 .venv\Scripts\Activate.ps1
 ```
 
-2. Install dependencies:
+2. 安裝相依套件：
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Place your robot URDF file in the project root as `robot_dog.urdf`
+3. 將你的機器狗 URDF 檔命名為 `robot_dog.urdf` 並放在專案根目錄
 
-4. Run training with GUI (default):
+4. 啟動訓練（預設 GUI）：
 ```bash
 python run.py
 ```
 
-5. Run training without PyBullet GUI:
+5. 不開啟 PyBullet GUI（推薦 Windows 用戶）：
 ```bash
 python run.py --no-gui
 ```
 
-Alternatively, use the convenience script:
+也可用快速腳本：
 ```bash
 python start_training.py
 ```
 
-TensorBoard will auto-open at: http://localhost:6006
+TensorBoard 會自動開啟於 http://localhost:6006
+
+---
+
+## 注意事項與常見問題（PyBullet GUI 顯示）
+
+### Windows 下請使用 `--no-gui` 模式訓練
+
+執行：
+```powershell
+python run.py --no-gui
+```
+這樣會用 PyBullet 的 DIRECT 模式，不會卡主執行緒，所有初始化流程都能執行到底。
+
+這一切都發生在 `render: false`（也就是 PyBullet DIRECT/headless 模式）
+
+#### 為什麼還是沒看到機器狗畫面？
+你現在用的是 `--no-gui`（或 `render: false`），這時 PyBullet 不會顯示 3D 畫面，但訓練與物理模擬都在正確執行。
+這是 Windows 下推薦的模式，因為 PyBullet GUI 會阻塞主執行緒，導致初始化流程無法進行。
+
+### 如果你想看到機器狗「動起來」的畫面
+
+- **在 Linux/WSL 下用 GUI 模式執行**
+  - 到支援 X11 的 Linux 或 WSL2（安裝 X server）環境
+  - 執行 `python run.py`（不要加 `--no-gui`）
+  - 這樣 PyBullet GUI 就不會阻塞，可以看到真實 3D 畫面
+
+- **Windows 下只能用 headless 訓練，或用「錄影/截圖」功能**
+  - 可以在 `test_robot_dog.py` 或 `test_robot_dog_unit.py` 這類腳本裡，短暫開啟 GUI、存圖或錄影
+  - 也可以在環境裡加一個「存圖」的 function，訓練過程中定時存下機器狗狀態
 
 ## Training Configuration
 
@@ -113,24 +142,3 @@ This project is inspired by recent advances in:
 - Physics-based simulation
 - Deep reinforcement learning
 - Robot locomotion 
-
-Windows 下請使用 --no-gui 模式訓練
-執行：
-powershell
-
-python run.py --no-gui
-
-這樣會用 PyBullet 的 DIRECT 模式，不會卡主執行緒，所有初始化流程都能執行到底。
-
-這一切都發生在 render: false（也就是 PyBullet DIRECT/headless 模式）
-為什麼還是沒看到機器狗畫面？
-你現在用的是 --no-gui（或 render: false），這時 PyBullet 不會顯示 3D 畫面，但訓練與物理模擬都在正確執行。
-這是 Windows 下推薦的模式，因為 PyBullet GUI 會阻塞主執行緒，導致初始化流程無法進行。
-如果你想看到機器狗「動起來」的畫面
-1. 在 Linux/WSL 下用 GUI 模式執行
-到支援 X11 的 Linux 或 WSL2（安裝 X server）環境
-執行 python run.py（不要加 --no-gui）
-這樣 PyBullet GUI 就不會阻塞，可以看到真實 3D 畫面
-2. Windows 下只能用 headless 訓練，或用「錄影/截圖」功能
-可以在 test_robot_dog.py 或 test_robot_dog_unit.py 這類腳本裡，短暫開啟 GUI、存圖或錄影
-也可以在環境裡加一個「存圖」的 function，訓練過程中定時存下機器狗狀態
