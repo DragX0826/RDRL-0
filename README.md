@@ -113,3 +113,24 @@ This project is inspired by recent advances in:
 - Physics-based simulation
 - Deep reinforcement learning
 - Robot locomotion 
+
+Windows 下請使用 --no-gui 模式訓練
+執行：
+powershell
+
+python run.py --no-gui
+
+這樣會用 PyBullet 的 DIRECT 模式，不會卡主執行緒，所有初始化流程都能執行到底。
+
+這一切都發生在 render: false（也就是 PyBullet DIRECT/headless 模式）
+為什麼還是沒看到機器狗畫面？
+你現在用的是 --no-gui（或 render: false），這時 PyBullet 不會顯示 3D 畫面，但訓練與物理模擬都在正確執行。
+這是 Windows 下推薦的模式，因為 PyBullet GUI 會阻塞主執行緒，導致初始化流程無法進行。
+如果你想看到機器狗「動起來」的畫面
+1. 在 Linux/WSL 下用 GUI 模式執行
+到支援 X11 的 Linux 或 WSL2（安裝 X server）環境
+執行 python run.py（不要加 --no-gui）
+這樣 PyBullet GUI 就不會阻塞，可以看到真實 3D 畫面
+2. Windows 下只能用 headless 訓練，或用「錄影/截圖」功能
+可以在 test_robot_dog.py 或 test_robot_dog_unit.py 這類腳本裡，短暫開啟 GUI、存圖或錄影
+也可以在環境裡加一個「存圖」的 function，訓練過程中定時存下機器狗狀態
